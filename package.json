@@ -1,0 +1,30 @@
+{
+  "name": "@2003scape/rsc-captcha",
+  "version": "1.0.0",
+  "description": "generate runescape classic sleep screen words",
+  "main": "./src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/2003scape/rsc-captcha.git"
+  },
+  "keywords": [
+    "runescape",
+    "classic",
+    "rsc",
+    "captcha",
+    "word",
+    "sleep"
+  ],
+  "author": "2003Scape Team",
+  "license": "AGPL-3.0+",
+  "bugs": {
+    "url": "https://github.com/2003scape/rsc-captcha/issues"
+  },
+  "homepage": "https://github.com/2003scape/rsc-captcha#readme",
+  "dependencies": {
+    "canvas": "^2.6.1"
+  }
+}
