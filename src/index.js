@@ -1,10 +1,18 @@
-const Image = process.browser ? window.Image : require('canvas').Image;
+const Image =
+    typeof window !== 'undefined' ? window.Image : require('canvas').Image;
+
 const fs = require('fs');
 const enUKWords = require('../en-uk');
-const { createCanvas } = require('canvas');
+let { createCanvas } = require('canvas');
+
+if (typeof OffscreenCanvas !== 'undefined') {
+    createCanvas = function (width, height) {
+        return new OffscreenCanvas(width, height);
+    };
+}
 
 const FONT_IMAGE = fs
-    .readFileSync(`${__dirname}/../fonts.png`)
+    .readFileSync(__dirname + '/../fonts.png')
     .toString('base64');
 
 const CHAR_WIDTH = 48;
@@ -15,7 +23,6 @@ const CAPTCHA_WIDTH = 255;
 class Captcha {
     constructor(words = enUKWords) {
         this.words = words;
-        this.fontImage = new Image();
         this.charImages = {}; // { 'a': [Canvas, Canvas, ...] }
     }
 
@@ -24,8 +31,10 @@ class Captcha {
             this.fontImage.width,
             this.fontImage.height
         );
+
         const context = canvas.getContext('2d');
         context.drawImage(this.fontImage, 0, 0);
+
         this.fontImageData = context.getImageData(
             0,
             0,
@@ -77,9 +86,21 @@ class Captcha {
 
     async loadFonts() {
         await new Promise((resolve, reject) => {
-            this.fontImage.onerror = reject;
-            this.fontImage.onload = resolve;
-            this.fontImage.src = `data:image/png;base64,${FONT_IMAGE}`;
+            if (typeof createImageBitmap !== 'undefined') {
+                fetch(`data:image/png;base64,${FONT_IMAGE}`)
+                    .then((res) => res.blob())
+                    .then((blob) => createImageBitmap(blob))
+                    .then((image) => {
+                        this.fontImage = image;
+                        resolve();
+                    })
+                    .catch(reject);
+            } else {
+                this.fontImage = new Image();
+                this.fontImage.onerror = reject;
+                this.fontImage.onload = resolve;
+                this.fontImage.src = `data:image/png;base64,${FONT_IMAGE}`;
+            }
         });
 
         this.loadImageData();
@@ -103,7 +124,9 @@ class Captcha {
                     boundaries.width,
                     boundaries.height
                 );
+
                 const context = canvas.getContext('2d');
+
                 context.putImageData(
                     this.fontImageData,
                     -boundaries.x,
